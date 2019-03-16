@@ -1,0 +1,156 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 2019/03/03 20:28:52
+// Design Name: 
+// Module Name: win33_mul
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+`include "defines.v"
+
+
+module win33_mul(
+    input  					clk, 
+    input 					rst_n,
+    input					enable,
+    input  		[63:0]		v_tmp1,
+    input  		[63:0]		v_tmp2,
+    input  		[63:0]		v_tmp3,
+    input  		[63:0]		v_tmp4,
+    //input  		[31:0] 		psum_in,
+    
+    //output	reg		 		end_signal,
+    input  		[63:0]		u_tmp1,
+    input  		[63:0]		u_tmp2,
+    input  		[63:0]		u_tmp3,
+    input  		[63:0]		u_tmp4,
+
+    output   reg   [127:0]      m_tmp1,
+    output   reg   [127:0]      m_tmp2,
+    output   reg   [127:0]      m_tmp3,
+    output   reg   [127:0]      m_tmp4,
+    output   reg                end_signal
+    );
+
+	wire [15:0] v1_1,v1_2,v1_3,v1_4;
+	wire [15:0] v2_1,v2_2,v2_3,v2_4;
+	wire [15:0] v3_1,v3_2,v3_3,v3_4;
+	wire [15:0] v4_1,v4_2,v4_3,v4_4;
+
+    wire [15:0] u1_1,u1_2,u1_3,u1_4;
+    wire [15:0] u2_1,u2_2,u2_3,u2_4;
+    wire [15:0] u3_1,u3_2,u3_3,u3_4;
+    wire [15:0] u4_1,u4_2,u4_3,u4_4;
+
+	reg  [31:0] m1_1,m1_2,m1_3,m1_4;
+	reg  [31:0] m2_1,m2_2,m2_3,m2_4;
+	reg  [31:0] m3_1,m3_2,m3_3,m3_4;
+	reg  [31:0] m4_1,m4_2,m4_3,m4_4;
+
+	assign {v1_1,v1_2,v1_3,v1_4} = v_tmp1;
+	assign {v2_1,v2_2,v2_3,v2_4} = v_tmp2;
+	assign {v3_1,v3_2,v3_3,v3_4} = v_tmp3;
+	assign {v4_1,v4_2,v4_3,v4_4} = v_tmp4;
+
+	assign {u1_1,u1_2,u1_3,u1_4} = u_tmp1;
+	assign {u2_1,u2_2,u2_3,u2_4} = u_tmp2;
+	assign {u3_1,u3_2,u3_3,u3_4} = u_tmp3;
+	assign {u4_1,u4_2,u4_3,u4_4} = u_tmp4;
+
+    reg  [1:0]   state;
+    reg  [1:0]   next_state;
+
+    localparam  [1:0]
+        INITAL  = 2'b00,
+        RUN_1   = 2'b01,
+        SAVE    = 2'b11;
+
+    always @(posedge clk or negedge rst_n)
+        begin
+            if(~rst_n) begin
+                 state <= INITAL;
+            end else begin
+                 state <= next_state;
+            end
+        end
+
+    always @(*) begin
+        //next_state <= state;
+        case(state)
+            INITAL:begin 
+                if(enable == 1)
+                    next_state = RUN_1;
+                else
+                    next_state = INITAL;
+            end
+
+            RUN_1:begin 
+                next_state = SAVE;
+            end
+            SAVE:begin 
+                next_state = INITAL;
+            end
+            
+            default : next_state = INITAL;
+        endcase
+    end
+
+    always @(*) begin
+        case(state)
+        INITAL: begin
+            {m1_1,m1_2,m1_3,m1_4} <= {16'h00,16'h00,16'h00,16'h00};
+            {m2_1,m2_2,m2_3,m2_4} <= {16'h00,16'h00,16'h00,16'h00};
+            {m3_1,m3_2,m3_3,m3_4} <= {16'h00,16'h00,16'h00,16'h00};
+            {m4_1,m4_2,m4_3,m4_4} <= {16'h00,16'h00,16'h00,16'h00};
+            {m_tmp1,m_tmp2,m_tmp3,m_tmp4} <= {64'h00,64'h00,64'h00,64'h00};
+            end_signal  <= `UnFinish;
+        end 
+        RUN_1: begin 
+
+            //mul_config #(16,16)   mul1(v1_1,u1_1,m1_1);
+
+            m1_1 <= $signed(v1_1) * $signed(u1_1);
+            m1_2 <= $signed(v1_2) * $signed(u1_2);
+            m1_3 <= $signed(v1_3) * $signed(u1_3);
+            m1_4 <= $signed(v1_4) * $signed(u1_4);
+
+            m2_1 <= $signed(v2_1) * $signed(u2_1);
+            m2_2 <= $signed(v2_2) * $signed(u2_2);
+            m2_3 <= $signed(v2_3) * $signed(u2_3);
+            m2_4 <= $signed(v2_4) * $signed(u2_4);
+
+            m3_1 <= $signed(v3_1) * $signed(u3_1);
+            m3_2 <= $signed(v3_2) * $signed(u3_2);
+            m3_3 <= $signed(v3_3) * $signed(u3_3);
+            m3_4 <= $signed(v3_4) * $signed(u3_4);
+
+            m4_1 <= $signed(v4_1) * $signed(u4_1);
+            m4_2 <= $signed(v4_2) * $signed(u4_2);
+            m4_3 <= $signed(v4_3) * $signed(u4_3);
+            m4_4 <= $signed(v4_4) * $signed(u4_4);
+            end_signal  <= `Finish;
+        end
+
+        SAVE:begin 
+            m_tmp1 <= {m1_1,m1_2,m1_3,m1_4};
+            m_tmp2 <= {m2_1,m2_2,m2_3,m2_4};
+            m_tmp3 <= {m3_1,m3_2,m3_3,m3_4};
+            m_tmp4 <= {m4_1,m4_2,m4_3,m4_4};
+            end_signal  <= `UnFinish;
+        end
+    endcase
+end 
+
+endmodule
