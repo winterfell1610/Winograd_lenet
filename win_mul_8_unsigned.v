@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2019/03/20 15:44:33
+// Create Date: 2019/03/21 15:23:09
 // Design Name: 
-// Module Name: win_mul_8
+// Module Name: win_mul_8_unsigned
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,6 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
+
 
 
 module win_mul_8_unsigned(
