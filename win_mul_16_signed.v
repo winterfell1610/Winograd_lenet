@@ -37,53 +37,55 @@ endmodule
 module win_mul_16_signed(
 	input  		[15:0] 	mul_a,
 	input  		[15:0] 	mul_b,
+	input 		[ 1:0] 	bitwidth,
 
-	output  	[31:0] 	mul_out
+	output  	[63:0] 	mul_out
     );
 
-	wire [15:0] mul_wire_a;
-	wire [15:0] mul_wire_b;
+	wire 		[ 7:0] 	a_high;
+	wire 		[ 7:0] 	a_low;
+	wire 		[ 7:0] 	b_high;
+	wire 		[ 7:0] 	b_low;
 
-	wire [29:0] stored0;
-	wire [29:0] stored1;
-	wire [29:0] stored2;
-	wire [29:0] stored3;
-	wire [29:0] stored4;
-	wire [29:0] stored5;
-	wire [29:0] stored6;
-	wire [29:0] stored7;
-	wire [29:0] stored8;
-	wire [29:0] stored9;
-	wire [29:0] stored10;
-	wire [29:0] stored11;
-	wire [29:0] stored12;
-	wire [29:0] stored13;
-	wire [29:0] stored14;
+	wire 		[15:0]	res_a1_b1;
+	wire		[15:0]	res_a1_b2;
+	wire 		[15:0]	res_a2_b1;
+	wire 		[15:0]	res_a2_b2;
 
-	wire [30:0] mul_wire_out;
+	wire 		[15:0]	res8_a1_b1;
+	wire		[15:0]	res8_a1_b2;
+	wire 		[15:0]	res8_a2_b1;
+	wire 		[15:0]	res8_a2_b2;
 
-	assign 	mul_wire_a 	= (mul_a[15] == 1'b0)? mul_a : {mul_a[15],~mul_a[14:0]+1'b1};
-	assign  mul_wire_b 	= (mul_b[15] == 1'b0)? mul_b : {mul_b[15],~mul_b[14:0]+1'b1};
+	wire 		[15:0]  mul_wire_a;
+	wire 		[15:0]  mul_wire_b;
 
-	assign	stored0 	= mul_wire_b[ 0]? {15'b0, mul_wire_a[14:0] 	  	 } : 30'b0;
-	assign	stored1 	= mul_wire_b[ 1]? {14'b0, mul_wire_a[14:0],  1'b0} : 30'b0;
-	assign	stored2 	= mul_wire_b[ 2]? {13'b0, mul_wire_a[14:0],  2'b0} : 30'b0;
-	assign	stored3 	= mul_wire_b[ 3]? {12'b0, mul_wire_a[14:0],  3'b0} : 30'b0;
-	assign	stored4 	= mul_wire_b[ 4]? {11'b0, mul_wire_a[14:0],  4'b0} : 30'b0;
-	assign	stored5 	= mul_wire_b[ 5]? {10'b0, mul_wire_a[14:0],  5'b0} : 30'b0;
-	assign	stored6 	= mul_wire_b[ 6]? { 9'b0, mul_wire_a[14:0],  6'b0} : 30'b0;
-	assign	stored7 	= mul_wire_b[ 7]? { 8'b0, mul_wire_a[14:0],  7'b0} : 30'b0;
-	assign	stored8 	= mul_wire_b[ 8]? { 7'b0, mul_wire_a[14:0],  8'b0} : 30'b0;
-	assign	stored9 	= mul_wire_b[ 9]? { 6'b0, mul_wire_a[14:0],  9'b0} : 30'b0;
-	assign	stored10 	= mul_wire_b[10]? { 5'b0, mul_wire_a[14:0], 10'b0} : 30'b0;
-	assign	stored11 	= mul_wire_b[11]? { 4'b0, mul_wire_a[14:0], 11'b0} : 30'b0;
-	assign	stored12 	= mul_wire_b[12]? { 3'b0, mul_wire_a[14:0], 12'b0} : 30'b0;
-	assign	stored13 	= mul_wire_b[13]? { 2'b0, mul_wire_a[14:0], 13'b0} : 30'b0;
-	assign	stored14 	= mul_wire_b[14]? { 1'b0, mul_wire_a[14:0], 14'b0} : 30'b0;
+	wire 		[31:0] 	mul_res_16;
+	wire 		[31:0] 	mul_res_16_wei;
 
-	assign	mul_wire_out = stored0+stored1+stored2+stored3+stored4+stored5+stored6+stored7+stored8+stored9+stored10+stored11+stored12+stored13+stored14;
+	assign 	mul_wire_a 	= 	((mul_a[15] == 1'b1))? {1'b1,~mul_a[14:0]+1'b1} : mul_a;
+	assign  mul_wire_b 	= 	((mul_b[15] == 1'b1))? {1'b1,~mul_b[14:0]+1'b1} : mul_b;
 
-	assign	mul_out 	= (mul_a == 16'h00 || mul_b == 16'h00) ? 32'h0 : 
-						  ((mul_a[15] ^ mul_b[15]) == 1'b1)    ?{1'b1,~mul_wire_out+1} : {1'b0,mul_wire_out};
+	assign a_high = (bitwidth == 2'b00) ? {1'b0,mul_wire_a[14:8]} : mul_a[15:8];
+	assign a_low  = (bitwidth == 2'b00) ? 		mul_wire_a[ 7:0]  : mul_a[ 7:0];
+	assign b_high = (bitwidth == 2'b00) ? {1'b0,mul_wire_b[14:8]} : mul_b[15:8];
+	assign b_low  = (bitwidth == 2'b00) ? 		mul_wire_b[ 7:0]  : mul_b[ 7:0];
+
+	win_mul_8 inst1_win_mul_8(a_high,b_high,2'b00,res_a1_b1);
+	win_mul_8 inst2_win_mul_8(a_high,b_low ,2'b00,res_a1_b2);
+	win_mul_8 inst3_win_mul_8(a_low ,b_high,2'b00,res_a2_b1);
+	win_mul_8 inst4_win_mul_8(a_low ,b_low ,2'b00,res_a2_b2);
+
+	win_mul_8 inst81_win_mul_8(a_high,b_high,2'b11,res8_a1_b1);
+	win_mul_8 inst82_win_mul_8(a_high,b_low ,2'b11,res8_a1_b2);
+	win_mul_8 inst83_win_mul_8(a_low ,b_high,2'b11,res8_a2_b1);
+	win_mul_8 inst84_win_mul_8(a_low ,b_low ,2'b11,res8_a2_b2);
+
+	assign mul_res_16_wei = ((res_a1_b1<<16) + ((res_a1_b2+res_a2_b1)<<8) + res_a2_b2);
+	assign mul_res_16 = ((mul_a[15] ^ mul_b[15]) == 1'b1) ? {1'b1,~mul_res_16_wei[30:0]+1} : mul_res_16_wei ;
+
+	assign mul_out 	  = (bitwidth == 2'b00) ? {32'b0,mul_res_16} : 
+						(bitwidth == 2'b11) ? {res8_a1_b1,res8_a1_b2,res8_a2_b1,res8_a2_b2} : {32'b0,mul_res_16};
+
 
 endmodule

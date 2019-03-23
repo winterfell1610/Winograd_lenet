@@ -33,6 +33,8 @@ module win33(
     input       [47:0]      kernel1,
     input       [47:0]      kernel2,
     input       [47:0]      kernel3,
+    
+    input 		[ 1:0]		bitwidth,
 
     output     	[127:0]     f_tmp,
 
@@ -49,10 +51,10 @@ module win33(
 	wire 		[63:0] 		u_tmp3;
 	wire 		[63:0] 		u_tmp4;
 
-	wire  		[127:0] 		m_tmp1;
-	wire  		[127:0] 		m_tmp2;
-	wire  		[127:0] 		m_tmp3;
-	wire  		[127:0] 		m_tmp4;
+	wire  		[127:0] 	m_tmp1;
+	wire  		[127:0] 	m_tmp2;
+	wire  		[127:0] 	m_tmp3;
+	wire  		[127:0] 	m_tmp4;
 
 	wire 					end_signal_d;
 	wire 					end_signal_g;
@@ -68,6 +70,7 @@ module win33(
 			.act2   (act2),
 			.act3   (act3),
 			.act4   (act4),
+			.bitwidth  (bitwidth),
 			.v_tmp1 (v_tmp1),
 			.v_tmp2 (v_tmp2),
 			.v_tmp3 (v_tmp3),
@@ -83,6 +86,7 @@ module win33(
 			.kernel1 (kernel1),
 			.kernel2 (kernel2),
 			.kernel3 (kernel3),
+			.bitwidth  (bitwidth),
 			.u_tmp1  (u_tmp1),
 			.u_tmp2  (u_tmp2),
 			.u_tmp3  (u_tmp3),
