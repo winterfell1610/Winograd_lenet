@@ -18,28 +18,14 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-/*
-module win_mul_16_signed(
-	input  		[15:0] 	mul_a,
-	input  		[15:0] 	mul_b,
-
-	output  	[31:0] 	mul_out
-    );
-	wire [15:0] mul_wire_a;
-	wire [15:0] mul_wire_b;
-
-	assign 	mul_wire_a 	= (mul_a[15] == 1'b0)? mul_a : {mul_a[15],~mul_a[14:0]+1'b1};
-	assign  mul_wire_b 	= (mul_b[15] == 1'b0)? mul_b : {mul_b[15],~mul_b[14:0]+1'b1};
-
-endmodule
-*/
 
 module win_mul_16_signed(
 	input  		[15:0] 	mul_a,
 	input  		[15:0] 	mul_b,
 	input 		[ 1:0] 	bitwidth,
-
-	output  	[63:0] 	mul_out
+	
+	output  	[31:0] 	mul_out
+	//output  	[63:0] 	mul_out
     );
 
 	wire 		[ 7:0] 	a_high;
@@ -77,15 +63,18 @@ module win_mul_16_signed(
 	win_mul_8 inst4_win_mul_8(a_low ,b_low ,2'b00,res_a2_b2);
 
 	win_mul_8 inst81_win_mul_8(a_high,b_high,2'b11,res8_a1_b1);
-	win_mul_8 inst82_win_mul_8(a_high,b_low ,2'b11,res8_a1_b2);
-	win_mul_8 inst83_win_mul_8(a_low ,b_high,2'b11,res8_a2_b1);
+	//win_mul_8 inst82_win_mul_8(a_high,b_low ,2'b11,res8_a1_b2);
+	//win_mul_8 inst83_win_mul_8(a_low ,b_high,2'b11,res8_a2_b1);
 	win_mul_8 inst84_win_mul_8(a_low ,b_low ,2'b11,res8_a2_b2);
 
 	assign mul_res_16_wei = ((res_a1_b1<<16) + ((res_a1_b2+res_a2_b1)<<8) + res_a2_b2);
 	assign mul_res_16 = ((mul_a[15] ^ mul_b[15]) == 1'b1) ? {1'b1,~mul_res_16_wei[30:0]+1} : mul_res_16_wei ;
 
+	/*
 	assign mul_out 	  = (bitwidth == 2'b00) ? {32'b0,mul_res_16} : 
-						(bitwidth == 2'b11) ? {res8_a1_b1,res8_a1_b2,res8_a2_b1,res8_a2_b2} : {32'b0,mul_res_16};
-
+						(bitwidth == 2'b11) ? {res8_a1_b1,res8_a2_b1,res8_a1_b2,res8_a2_b2} : {32'b0,mul_res_16};
+	*/
+	assign mul_out 	  = (bitwidth == 2'b00) ? mul_res_16 : 
+						(bitwidth == 2'b11) ? {res8_a1_b1,res8_a2_b2} : mul_res_16;
 
 endmodule
